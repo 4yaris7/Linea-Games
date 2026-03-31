@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>GameHub 🎮</title>
+
+<style>
+body {
+  font-family: Arial;
+  background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+  color: white;
+  text-align: center;
+}
+
+h1 {
+  margin: 20px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 15px;
+  padding: 20px;
+}
+
+.game {
+  background: #1e1e1e;
+  padding: 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.game:hover {
+  transform: scale(1.05);
+  background: #333;
+}
+
+.game img {
+  width: 100%;
+  border-radius: 10px;
+}
+
+canvas {
+  margin-top: 20px;
+  background: black;
+  border-radius: 10px;
+}
+
+#comments {
+  margin-top: 30px;
+}
+
+input {
+  padding: 10px;
+  width: 200px;
+}
+
+button {
+  padding: 10px;
+  cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🎮 GameHub</h1>
+
+<div class="grid">
+  <div class="game" onclick="startSnake()">
+    <img src="https://via.placeholder.com/150">
+    <p>Snake</p>
+  </div>
+
+  <div class="game" onclick="startClicker()">
+    <img src="https://via.placeholder.com/150">
+    <p>Clicker</p>
+  </div>
+
+  <div class="game" onclick="startReaction()">
+    <img src="https://via.placeholder.com/150">
+    <p>Reaction</p>
+  </div>
+
+  <div class="game" onclick="startCatch()">
+    <img src="https://via.placeholder.com/150">
+    <p>Catch Game</p>
+  </div>
+
+  <div class="game" onclick="startDodger()">
+    <img src="https://via.placeholder.com/150">
+    <p>Dodger</p>
+  </div>
+
+  <div class="game" onclick="startPainter()">
+    <img src="https://via.placeholder.com/150">
+    <p>Painter</p>
+  </div>
+</div>
+
+<canvas id="gameCanvas" width="400" height="400"></canvas>
+
+<h2>🚧 More Games Coming Soon!!</h2>
+
+<div id="comments">
+  <h3>💬 Kommentare</h3>
+  <input id="commentInput" placeholder="Schreib was...">
+  <button onclick="addComment()">Senden</button>
+  <div id="commentList"></div>
+</div>
+
+<script>
+let canvas = document.getElementById("gameCanvas");
+let ctx = canvas.getContext("2d");
+
+// ---------- Snake ----------
+let snake, dx, dy, food;
+function startSnake(){
+  clearInterval(window.loop);
+  snake=[{x:200,y:200}];
+  dx=20; dy=0;
+  food={x:100,y:100};
+  loop=setInterval(()=>{
+    ctx.fillStyle="black";
+    ctx.fillRect(0,0,400,400);
+
+    ctx.fillStyle="red";
+    ctx.fillRect(food.x,food.y,20,20);
+
+    let head={x:snake[0].x+dx,y:snake[0].y+dy};
+    snake.unshift(head);
+
+    if(head.x==food.x && head.y==food.y){
+      food={x:Math.random()*380,y:Math.random()*380};
+    } else snake.pop();
+
+    ctx.fillStyle="lime";
+    snake.forEach(s=>ctx.fillRect(s.x,s.y,20,20));
+  },100);
+}
+
+// Steuerung
+document.addEventListener("keydown", e=>{
+  if(e.key=="ArrowUp"){dx=0;dy=-20;}
+  if(e.key=="ArrowDown"){dx=0;dy=20;}
+  if(e.key=="ArrowLeft"){dx=-20;dy=0;}
+  if(e.key=="ArrowRight"){dx=20;dy=0;}
+});
+
+// ---------- Clicker ----------
+function startClicker(){
+  clearInterval(window.loop);
+  let score=0;
+  canvas.onclick=()=>{
+    score++;
+    ctx.clearRect(0,0,400,400);
+    ctx.fillStyle="white";
+    ctx.fillText("Score: "+score,150,200);
+  };
+}
+
+// ---------- Reaction ----------
+function startReaction(){
+  clearInterval(window.loop);
+  ctx.fillText("Warte...",150,200);
+  let start;
+
+  setTimeout(()=>{
+    ctx.fillStyle="green";
+    ctx.fillRect(0,0,400,400);
+    start=Date.now();
+  },Math.random()*3000+1000);
+
+  canvas.onclick=()=>{
+    let time=Date.now()-start;
+    ctx.clearRect(0,0,400,400);
+    ctx.fillText("Reaktion: "+time+"ms",120,200);
+  };
+}
+
+// ---------- Catch Game ----------
+function startCatch(){
+  clearInterval(window.loop);
+  let x=Math.random()*380, y=0, score=0;
+
+  loop=setInterval(()=>{
+    ctx.clearRect(0,0,400,400);
+    ctx.fillStyle="yellow";
+    ctx.fillRect(x,y,20,20);
+    y+=5;
+
+    if(y>400){y=0; x=Math.random()*380;}
+
+    canvas.onclick=()=>{
+      if(Math.abs(x-200)<50){
+        score++;
+        y=0;
+      }
+    };
+
+    ctx.fillStyle="white";
+    ctx.fillText("Score: "+score,10,20);
+  },50);
+}
+
+// ---------- Dodger ----------
+function startDodger(){
+  clearInterval(window.loop);
+  let playerX=180;
+  let enemyY=0;
+
+  document.onkeydown=e=>{
+    if(e.key=="ArrowLeft") playerX-=20;
+    if(e.key=="ArrowRight") playerX+=20;
+  };
+
+  loop=setInterval(()=>{
+    ctx.clearRect(0,0,400,400);
+
+    ctx.fillStyle="red";
+    ctx.fillRect(200,enemyY,20,20);
+    enemyY+=5;
+
+    ctx.fillStyle="blue";
+    ctx.fillRect(playerX,350,40,20);
+
+    if(enemyY>350 && Math.abs(playerX-200)<40){
+      alert("Game Over!");
+      clearInterval(loop);
+    }
+  },50);
+}
+
+// ---------- Painter ----------
+function startPainter(){
+  clearInterval(window.loop);
+  canvas.onclick=e=>{
+    ctx.fillStyle="white";
+    ctx.fillRect(e.offsetX,e.offsetY,5,5);
+  };
+}
+
+// ---------- Kommentare speichern ----------
+function addComment(){
+  let input=document.getElementById("commentInput");
+  let comments=JSON.parse(localStorage.getItem("comments")||"[]");
+
+  comments.push(input.value);
+  localStorage.setItem("comments",JSON.stringify(comments));
+
+  showComments();
+  input.value="";
+}
+
+function showComments(){
+  let list=document.getElementById("commentList");
+  list.innerHTML="";
+  let comments=JSON.parse(localStorage.getItem("comments")||"[]");
+
+  comments.forEach(c=>{
+    let div=document.createElement("div");
+    div.textContent=c;
+    list.appendChild(div);
+  });
+}
+
+showComments();
+</script>
+
+</body>
+</html>
